@@ -8,12 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { QRCodeSVG } from "qrcode.react";
 
 const CrowdFundingPage = () => {
-  // --- PLACEHOLDER DATA ---
-  // The user should replace these with their actual details later.
+  const [amount, setAmount] = useState<string>("500");
+  
+  // --- PAYMENT DETAILS ---
   const upiId = "9217843095@kotak";
-  const upiQrSrc = "/upi-qr.png"; // User needs to save their QR here
   const bankDetails = {
     accountName: "APSARA .",
     accountNumber: "9551002389",
@@ -23,6 +24,10 @@ const CrowdFundingPage = () => {
     branchName: "GURGAON - M.G ROAD",
   };
   const paypalEmail = "apsara.20057@gmail.com";
+
+  const usdAmount = (Number(amount || 0) / 83).toFixed(2);
+  const upiString = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(bankDetails.accountName)}&cu=INR&am=${amount || 0}`;
+  const paypalString = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${paypalEmail}&item_name=Support%20Apsara&currency_code=USD&amount=${usdAmount}`;
 
   const handleCopy = (text: string, subject: string) => {
     navigator.clipboard.writeText(text);
@@ -53,6 +58,20 @@ const CrowdFundingPage = () => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
+          <div className="max-w-xl mx-auto mb-8 bg-card/60 p-6 rounded-2xl border border-foreground/10 text-center shadow-sm">
+            <Label className="text-xl mb-4 block font-bold">How much would you like to contribute? (INR)</Label>
+            <div className="relative max-w-xs mx-auto">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-muted-foreground w-4 text-xl">₹</span>
+              <Input 
+                type="number" 
+                value={amount} 
+                onChange={(e) => setAmount(e.target.value)} 
+                className="text-center font-bold text-2xl h-14 pl-10"
+                placeholder="500"
+              />
+            </div>
+          </div>
+
           <Card className="glass-card border-none bg-card/60">
             <Tabs defaultValue="upi" className="w-full">
               <CardHeader className="p-0 pb-6 rounded-t-3xl overflow-hidden">
@@ -77,11 +96,11 @@ const CrowdFundingPage = () => {
                 <TabsContent value="upi" className="space-y-8 animate-in fade-in-50 duration-500 m-0">
                   <div className="flex flex-col items-center justify-center space-y-6">
                     <div className="bg-white p-4 rounded-xl shadow-lg">
-                      {/* Using a placeholder image if custom QR is missing */}
-                      <img 
-                        src={upiQrSrc} 
-                        alt="UPI QR Code" 
-                        className="w-64 h-64 object-cover rounded-lg"
+                      {/* Dynamically Generated QR Code */}
+                      <QRCodeSVG 
+                        value={upiString} 
+                        size={256} 
+                        className="rounded-lg"
                       />
                     </div>
                     <div className="flex items-center space-x-2 bg-foreground/5 px-6 py-4 rounded-xl border border-foreground/10 max-w-sm w-full">
@@ -92,6 +111,15 @@ const CrowdFundingPage = () => {
                       <Button variant="ghost" size="icon" onClick={() => handleCopy(upiId, "UPI ID")} className="text-primary hover:bg-primary/10">
                         <Copy size={20} />
                       </Button>
+                    </div>
+                    
+                    <div className="w-full max-w-sm mt-4">
+                      <a 
+                        href={upiString} 
+                        className="btn-primary block w-full text-center shadow-lg shadow-primary/20 py-4 text-lg"
+                      >
+                        Pay ₹{amount || 0} with UPI App
+                      </a>
                     </div>
                   </div>
                 </TabsContent>
@@ -168,12 +196,12 @@ const CrowdFundingPage = () => {
                       </div>
 
                       <a 
-                        href={`https://paypal.com/`}
+                        href={paypalString}
                         target="_blank"
                         rel="noreferrer"
-                        className="btn-primary w-full shadow-lg shadow-primary/20"
+                        className="btn-primary w-full shadow-lg shadow-primary/20 py-4 text-lg"
                       >
-                        Open PayPal
+                        Checkout ${usdAmount} on PayPal
                       </a>
                     </div>
                   </div>
