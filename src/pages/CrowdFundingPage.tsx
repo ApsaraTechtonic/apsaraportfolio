@@ -15,13 +15,14 @@ const CrowdFundingPage = () => {
   
   // --- PAYMENT DETAILS ---
   const upiId = "9217843095@kotak";
+  const accountName = "APSARA .";
   const paypalEmail = "apsara.20057@gmail.com";
   // To make Netbanking functional, you MUST insert your Razorpay Key ID here
   const razorpayKeyId = "YOUR_RAZORPAY_KEY"; 
 
   const usdAmount = (Number(amount || 0) / 83).toFixed(2);
   const inrPaiseAmount = Number(amount || 0) * 100; // Razorpay uses minimum denomination (paise)
-  const upiString = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(bankDetails.accountName)}&cu=INR&am=${amount || 0}`;
+  const upiString = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(accountName)}&cu=INR&am=${amount || 0}`;
   const paypalString = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${paypalEmail}&item_name=Support%20Apsara&currency_code=USD&amount=${usdAmount}`;
 
   const handleCopy = (text: string, subject: string) => {
