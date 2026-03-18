@@ -10,6 +10,7 @@ import WorkPage from "./pages/WorkPage";
 import InterestsPage from "./pages/InterestsPage";
 import GamePage from "./pages/GamePage";
 import ContactPage from "./pages/ContactPage";
+import CrowdFundingPage from "./pages/CrowdFundingPage";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import CustomCursor from "./components/CustomCursor";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/interests" element={<InterestsPage />} />
             <Route path="/game" element={<GamePage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/crowd-funding" element={<CrowdFundingPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

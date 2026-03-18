@@ -10,6 +10,7 @@ const links = [
   { label: "Work", path: "/work" },
   { label: "Interests", path: "/interests" },
   { label: "Game", path: "/game" },
+  { label: "Crowd Funding", path: "/crowd-funding" },
   { label: "Contact", path: "/contact" },
 ];
 
