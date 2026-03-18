@@ -15,23 +15,63 @@ const CrowdFundingPage = () => {
   
   // --- PAYMENT DETAILS ---
   const upiId = "9217843095@kotak";
-  const bankDetails = {
-    accountName: "APSARA .",
-    accountNumber: "9551002389",
-    accountType: "Savings",
-    ifsc: "KKBK0000261",
-    bankName: "Kotak Mahindra Bank",
-    branchName: "GURGAON - M.G ROAD",
-  };
   const paypalEmail = "apsara.20057@gmail.com";
+  // To make Netbanking functional, you MUST insert your Razorpay Key ID here
+  const razorpayKeyId = "YOUR_RAZORPAY_KEY"; 
 
   const usdAmount = (Number(amount || 0) / 83).toFixed(2);
+  const inrPaiseAmount = Number(amount || 0) * 100; // Razorpay uses minimum denomination (paise)
   const upiString = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(bankDetails.accountName)}&cu=INR&am=${amount || 0}`;
   const paypalString = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${paypalEmail}&item_name=Support%20Apsara&currency_code=USD&amount=${usdAmount}`;
 
   const handleCopy = (text: string, subject: string) => {
     navigator.clipboard.writeText(text);
     toast.success(`${subject} copied to clipboard!`);
+  };
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handleRazorpayCheckout = async () => {
+    if (razorpayKeyId === "YOUR_RAZORPAY_KEY" || !razorpayKeyId) {
+      toast.error("Gateway is in sandbox mode. Please add your Razorpay Live Key to process real payments!");
+      return;
+    }
+
+    const res = await loadRazorpayScript();
+    if (!res) {
+      toast.error("Razorpay SDK failed to load. Are you online?");
+      return;
+    }
+
+    const options = {
+      key: razorpayKeyId,
+      amount: inrPaiseAmount,
+      currency: "INR",
+      name: "Apsara Portfolio",
+      description: "Crowd Funding Support",
+      handler: function (response: any) {
+        toast.success(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
+      },
+      prefill: {
+        name: "Generous Supporter",
+        email: "",
+        contact: "",
+      },
+      theme: {
+        color: "#ff69b4",
+      },
+    };
+
+    const paymentObject = new (window as any).Razorpay(options);
+    paymentObject.open();
   };
 
   return (
@@ -124,51 +164,24 @@ const CrowdFundingPage = () => {
                   </div>
                 </TabsContent>
 
-                {/* NETBANKING TAB */}
-                <TabsContent value="bank" className="space-y-6 animate-in fade-in-50 duration-500 m-0 max-w-md mx-auto">
-                  <CardDescription className="text-center mb-6">
-                    You can make a direct bank transfer using the details below.
-                  </CardDescription>
-                  
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Account Holder Name</Label>
-                      <Input readOnly value={bankDetails.accountName} className="font-mono bg-foreground/5 border-foreground/10 focus-visible:ring-primary" />
+                {/* NETBANKING TAB / RAZORPAY GATEWAY */}
+                <TabsContent value="bank" className="space-y-6 animate-in fade-in-50 duration-500 m-0">
+                  <div className="flex flex-col items-center justify-center h-full py-12 space-y-8">
+                    <div className="bg-[#1a1a2e] text-white p-6 rounded-full shadow-lg shadow-[#1a1a2e]/20">
+                      <Landmark size={48} className="text-[#3b82f6]" />
                     </div>
-
-                    <div className="space-y-2">
-                      <Label>Account Type</Label>
-                      <Input readOnly value={bankDetails.accountType} className="font-mono bg-foreground/5 border-foreground/10 focus-visible:ring-primary" />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>Account Number</Label>
-                      <div className="flex gap-2">
-                        <Input readOnly value={bankDetails.accountNumber} className="font-mono bg-foreground/5 border-foreground/10 focus-visible:ring-primary" />
-                        <Button variant="outline" size="icon" onClick={() => handleCopy(bankDetails.accountNumber, "Account Number")} className="border-foreground/10 hover:bg-primary/10 hover:text-primary transition-colors">
-                          <Copy size={18} />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>IFSC Code</Label>
-                      <div className="flex gap-2">
-                        <Input readOnly value={bankDetails.ifsc} className="font-mono bg-foreground/5 border-foreground/10 focus-visible:ring-primary" />
-                        <Button variant="outline" size="icon" onClick={() => handleCopy(bankDetails.ifsc, "IFSC Code")} className="border-foreground/10 hover:bg-primary/10 hover:text-primary transition-colors">
-                          <Copy size={18} />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Bank Name</Label>
-                      <Input readOnly value={bankDetails.bankName} className="font-mono bg-foreground/5 border-foreground/10 focus-visible:ring-primary" />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Branch Name</Label>
-                      <Input readOnly value={bankDetails.branchName} className="font-mono bg-foreground/5 border-foreground/10 focus-visible:ring-primary" />
+                    <div className="text-center max-w-sm w-full">
+                      <h3 className="text-2xl font-bold mb-3">Netbanking Checkout</h3>
+                      <p className="text-muted-foreground mb-8">
+                        Process your contribution securely via our integrated Razorpay gateway. Supports all major Indian banks, credit cards, and debit cards.
+                      </p>
+                      
+                      <Button 
+                        onClick={handleRazorpayCheckout}
+                        className="btn-primary w-full shadow-lg shadow-primary/20 py-6 text-lg"
+                      >
+                        Checkout ₹{amount || 0} via Gateway
+                      </Button>
                     </div>
                   </div>
                 </TabsContent>
