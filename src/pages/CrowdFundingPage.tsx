@@ -17,16 +17,61 @@ const CrowdFundingPage = () => {
   const upiId = "9217843095@kotak";
   const accountName = "APSARA .";
   const paypalEmail = "apsara.20057@gmail.com";
-  const razorpayUsername = "apsara3036";
+  const razorpayKeyId = "rzp_test_SSy8DCjsvliQAh";
 
   const usdAmount = (Number(amount || 0) / 83).toFixed(2);
+  const inrPaiseAmount = Number(amount || 0) * 100; // Razorpay accepts minimum denomination in paise
   const upiString = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(accountName)}&cu=INR&am=${amount || 0}`;
   const paypalString = `https://www.paypal.com/myaccount/transfer/send`;
-  const razorpayString = `https://razorpay.me/@${razorpayUsername}`;
 
   const handleCopy = (text: string, subject: string) => {
     navigator.clipboard.writeText(text);
     toast.success(`${subject} copied to clipboard!`);
+  };
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handleRazorpayCheckout = async () => {
+    if (!razorpayKeyId) {
+      toast.error("Razorpay Key is missing!");
+      return;
+    }
+
+    const res = await loadRazorpayScript();
+    if (!res) {
+      toast.error("Razorpay SDK failed to load. Are you connected to the internet?");
+      return;
+    }
+
+    const options = {
+      key: razorpayKeyId,
+      amount: inrPaiseAmount,
+      currency: "INR",
+      name: "Apsara Portfolio",
+      description: "Crowd Funding Support",
+      handler: function (response: any) {
+        toast.success(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
+      },
+      prefill: {
+        name: "Generous Supporter",
+        email: "",
+        contact: "",
+      },
+      theme: {
+        color: "#ff69b4",
+      },
+    };
+
+    const paymentObject = new (window as any).Razorpay(options);
+    paymentObject.open();
   };
 
   return (
@@ -131,14 +176,12 @@ const CrowdFundingPage = () => {
                         Process your contribution securely via our integrated Razorpay gateway. Supports all major Indian banks, credit cards, and debit cards.
                       </p>
                       
-                      <a 
-                        href={razorpayString}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="btn-primary w-full shadow-lg shadow-primary/20 py-6 text-lg block"
+                      <Button 
+                        onClick={handleRazorpayCheckout}
+                        className="btn-primary w-full shadow-lg shadow-primary/20 py-6 text-lg"
                       >
-                        Checkout ₹{amount || 0} via Razorpay
-                      </a>
+                        Checkout ₹{amount || 0} via Razorpay Gateway
+                      </Button>
                     </div>
                   </div>
                 </TabsContent>
