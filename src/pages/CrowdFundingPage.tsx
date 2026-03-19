@@ -21,8 +21,8 @@ const CrowdFundingPage = () => {
 
   const usdAmount = (Number(amount || 0) / 83).toFixed(2);
   const upiString = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(accountName)}&cu=INR&am=${amount || 0}`;
-  const paypalString = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${paypalEmail}&item_name=Support%20Apsara&currency_code=USD&amount=${usdAmount}`;
-  const razorpayString = `https://razorpay.me/@${razorpayUsername}?amount=${amount || 0}`;
+  const paypalString = `https://www.paypal.com/myaccount/transfer/send`;
+  const razorpayString = `https://razorpay.me/@${razorpayUsername}`;
 
   const handleCopy = (text: string, subject: string) => {
     navigator.clipboard.writeText(text);
